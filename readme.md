@@ -1,87 +1,63 @@
-# Design of a Vector Embedding for Capability Composition
-**PCCST503 – Machine Learning | Assignment 2**  
-**Submitted by:** Devanandan J Y | Government Engineering College (GEC) Thrissur  
+# Autonomous Capability Embedding Engine
+**Author:** Devanandan J Y | **Institution:** Government Engineering College (GEC) Thrissur  
+**Course:** PCCST503 – Machine Learning | Assignment 2
 
-## Executive Summary
-This repository delivers a mathematically rigorous Vector Embedding Architecture designed for autonomous capability composition. While traditional NLP embeddings (Word2Vec) capture semantic proximity, this system embeds functional operations into a continuous Cartesian space. By partitioning the vector space into discrete functional, schema, and operational subspaces, the architecture computationally verifies dependency chaining, identifies logical contradictions, and computes exact algebraic capability composition without requiring natural language inference.
+## 📖 Project Overview
+This repository provides a mathematical vector embedding architecture designed for autonomous software capability composition. Unlike standard NLP embeddings (like Word2Vec) that map semantic similarities, this engine embeds deterministic functional operations into a continuous Cartesian space. 
 
-## 1. Problem Definition
-In Assignment 1, planning algorithms operated over pre-defined graph transitions in a state space $\mathbb{R}^d$. Real-world software systems, however, are driven by executable capabilities—modular operations constrained by prerequisites, operational latency, and resource schemas. The objective is to formulate an embedding function $\phi_C: \mathcal{C} \rightarrow \mathbb{R}^{d_c}$ where geometric alignment guarantees operational compatibility, allowing automated planners to orchestrate complex service pipelines purely via linear algebra.
+By separating variables into distinct functional, schema, and operational subspaces, the engine allows an automated planner to mathematically verify dependency chains, detect logical contradictions, and compute the exact algebraic cost of a composed software pipeline without relying on natural language inference.
 
-## 2. Design Requirements
-The proposed embedding architecture satisfies the following operational requirements:
-1. **Capability Identity:** Unique vectors for distinct operations.
-2. **Precondition-Effect Strictness:** Directional compatibility must reject logical contradictions (e.g., `DatabaseConfigured = False` blocking `DeploySupabase = True`).
-3. **Similarity vs. Composability Decoupling:** Similar operations (e.g., Vercel Deployment vs. Render Deployment) must group together geometrically without falsely signaling sequential composability.
-4. **Operational Homomorphism:** Cost and time must accumulate additively; probabilistic reliability must map to an additive vector space.
+## 📐 The Masked Subspace Architecture
+Standard flat vectors suffer from "null-value ambiguity"—they cannot easily distinguish between a state variable that must be `False` versus a state variable that is entirely irrelevant. 
 
-## 3. Related Embedding Approaches
-Existing paradigms like TransE represent operations as translations ($h + r \approx t$). This captures net-delta state changes but entirely fails to encode static prerequisites (where a condition is required but not altered). Text-based LLM embeddings (e.g., APIBench) conflate description semantics with execution constraints, failing to provide the deterministic guarantees required for safe orchestrator planning.
+To solve this, this engine uses a **Masked Subspace Architecture**. A capability `C` is mapped to an array formatted as:
+`[ p_val | p_mask | e_val | e_mask | q_ops ]`
 
-## 4. Proposed Representation Architecture
-To resolve the null-value ambiguity present in flat vectors, this implementation introduces a **Masked Subspace Architecture**. The capability vector $\phi_C(C_i)$ is partitioned into orthogonal sectors:
+*   `p_val` & `e_val`: Target values for preconditions and effects (1.0 for True, -1.0 for False).
+*   `p_mask` & `e_mask`: Binary masks (1.0 or 0.0) indicating whether a variable is actively required/mutated by the capability, or simply ignored.
+*   `q_ops`: A 3-dimensional operational cost vector containing Latency, Monetary Cost, and Log-Reliability.
 
-$$\phi_C(C_i) = [ \vec{p}_{val} \parallel \vec{p}_{mask} \parallel \vec{e}_{val} \parallel \vec{e}_{mask} \parallel \vec{q}_{ops} ]$$
+## 🧮 Mathematical Foundations
 
-*   $\vec{p}_{val}, \vec{e}_{val} \in \mathbb{R}^n$: Target values (1.0 for True, -1.0 for False) for preconditions and effects.
-*   $\vec{p}_{mask}, \vec{e}_{mask} \in \mathbb{R}^n$: Binary masks indicating whether a variable is actively constrained or mutated (1.0) or ignored (0.0).
-*   $\vec{q}_{ops} \in \mathbb{R}^3$: Operational vector containing Latency, Monetary Cost, and Log-Reliability.
+### 1. Multiplicative Reliability via Log-Space Additivity
+Execution reliability probabilities multiply (e.g., `0.99 * 0.95 = 0.9405`). To keep the vector space strictly additive, we apply a negative log-likelihood transformation to the reliability coordinate:
+`q_ops[2] = -ln(max(Reliability, 1e-6))`
 
-## 5. Mathematical Formulation
-**Log-Reliability Transformation:**
-Execution reliabilities are probabilistic and multiplicative: $Rel_{12} = Rel_1 \times Rel_2$. To satisfy vector space additivity, we apply a negative log-likelihood transformation to the operational subspace:
-$$\vec{q}[2] = -\ln(\max(Rel_i, 10^{-6}))$$
-By logarithmic identity, $-\ln(Rel_1 \times Rel_2) = -\ln(Rel_1) + -\ln(Rel_2)$. Therefore, vector addition natively computes the composite failure probability exactly.
+By logarithmic identity, `-ln(A * B) = -ln(A) + -ln(B)`. Therefore, standard vector addition during capability composition exactly computes the composite failure probability.
 
-**Directed Compatibility:**
-For transition $C_1 \rightarrow C_2$, the overlap mask is defined as $\vec{m}_{overlap} = \vec{e}_{mask,1} \odot \vec{p}_{mask,2}$. A strict contradiction exists if:
-$$\sum ( \vec{m}_{overlap} \odot \mathbb{I}(\vert{}\vec{e}_{val,1} - \vec{p}_{val,2}\vert{} > \epsilon) ) > 0$$
+### 2. Directed Compatibility
+When checking if Capability A can transition into Capability B (`A -> B`), the engine computes an overlap mask:
+`m_overlap = e_mask_A * p_mask_B`
 
-## 6. Capability Composition Model
-Given $C_{12} = C_2 \circ C_1$, the algebraic composition vector $\vec{v}_{12}$ is computed directly via element-wise operations on the masked subspaces:
-*   **Composite Precondition Mask:** $\vec{p}_{mask,12} = \text{clip}(\vec{p}_{mask,1} + \vec{p}_{mask,2} \odot (1 - \vec{e}_{mask,1}), 0, 1)$
-*   **Composite Effect Mask:** $\vec{e}_{mask,12} = \text{clip}(\vec{e}_{mask,2} + \vec{e}_{mask,1}, 0, 1)$
+A strict logical contradiction exists (and compatibility is blocked) if Capability A outputs a state that directly conflicts with the requirements of Capability B across the overlapping mask.
 
-## 7. Implementation
-The engine is implemented in Python `3.10+` using NumPy for highly optimized matrix operations. The `VectorSpace` class handles dynamic vocabulary mapping, masked array generation, and spatial similarity calculations.
+### 3. Algebraic Composition Model
+When executing Capability A followed by Capability B (`B ◦ A`), the composite vector is calculated via element-wise matrix operations:
+*   **Inherited Preconditions:** The composite retains A's preconditions, plus any preconditions of B that A's effects did not satisfy.
+*   **Overwritten Effects:** B's effects overwrite A's effects wherever they overlap.
+*   **Accumulated Operations:** Latency, cost, and log-reliability are summed perfectly.
 
-## 8. Experimental Methodology & Results
-The architecture was benchmarked against a Full-Stack Web Deployment pipeline (Next.js client, Supabase backend).
+## 🧪 Benchmark Results: Web Deployment Pipeline
+The engine was evaluated using a highly parameterized Cloud DevOps and Web Deployment benchmark (Next.js, Supabase, Vercel, Render) across 5 core experiments.
 
-**Experiment 1: Capability Compatibility**
-*   $C_1$ (InitSupabase) outputs `DatabaseReady = True`.
-*   $C_2$ (DeployNextjs) requires `DatabaseReady = True`.
-*   *Result:* Compatibility Score = `1.0`. Vector alignment perfectly validated the dependency chain.
+*   **Experiment 1: Strict Compatibility:** The engine successfully validated the dependency chain `InitSupabase -> DeployNextjs` (Compatibility = 1.0) and accurately rejected contradictory sequences.
+*   **Experiment 2: Algebraic Composition:** Composing `InitSupabase` and `DeployNextjs` yielded a unified vector that preserved the initial `GitRepoExists=True` precondition and correctly summed the latencies (450ms + 1200ms = 1650ms).
+*   **Experiment 3: Decoupled Similarity:** `DeployVercel` and `DeployRender` yielded a Functional Cosine Similarity of 1.0. The engine correctly grouped them as functionally identical deployment substitutes despite differing operational costs and execution mechanisms.
+*   **Experiment 4: Irrelevant Distractors:** Goal relevance was evaluated by comparing the goal vector (`AppLive=True`) against a distractor capability (`InstallSteamGame`). The dot product returned a 0.0 relevance score, instantly filtering the distractor.
+*   **Experiment 5: Operational Homomorphism:** Vector additivity on the log-reliability sector yielded an exact match to the scalar probability multiplication, validating the engine's mathematical integrity.
 
-**Experiment 2: Algebraic Composition**
-Composing $C_2 \circ C_1$ yielded $\vec{v}_{12}$.
-*   *Result:* $\vec{v}_{12}$ retained the `GitRepoExists = True` precondition from $C_1$, outputted `AppLive = True` from $C_2$, and exactly summed the latency subspace ($450ms + 1200ms = 1650ms$). Homomorphism holds with $\Delta = 0.0$.
+## 🚀 Quick Start Guide
 
-**Experiment 3: Alternative Implementations**
-*   $C_{vercel}$ (Deploy to Vercel) vs. $C_{render}$ (Deploy to Render). Both require a Git repository and result in `AppLive`.
-*   *Result:* Functional Cosine Similarity = `1.0`. The system successfully recognizes them as functionally identical substitutes, despite divergent internal execution metadata.
+### Prerequisites
+*   Python 3.10+
+*   NumPy
 
-**Experiment 4: Irrelevant Capabilities**
-*   Comparing a distractor capability (e.g., `InstallSteamGame`) against the goal vector `AppLive = True`.
-*   *Result:* Relevance Score = `0.0`. The dot product of the effect vector and goal vector instantly filtered the distractor.
-
-**Experiment 5: Operational Attributes**
-*   *Result:* Log-reliability addition yielded $-\ln(0.99) + -\ln(0.95) = 0.0613$. The inverse $e^{-0.0613} = 0.9405$ exactly matches the scalar probability multiplication ($0.99 \times 0.95$), proving vector integrity.
-
-## 9. Comprehensive Analysis
-*   **State Awareness:** The dual-mask architecture entirely resolves the limitation of standard vectors, allowing the planner to distinguish between "Must be False" ($\vec{p}_{val}=-1.0, \vec{p}_{mask}=1.0$) and "Irrelevant" ($\vec{p}_{val}=0.0, \vec{p}_{mask}=0.0$).
-*   **Efficiency:** Matrix operations in $\mathbb{R}^{4n+3}$ scale linearly $\mathcal{O}(N)$ and execute in microseconds, making this suitable for high-frequency runtime replanning.
-
-## 10. Limitations & Conclusion
-**Limitations:** The current model assumes a fixed, global state vocabulary. Dynamically adding new state variables requires rebuilding the vector dimensions. Furthermore, strictly sequential composition is modeled; parallel pipeline execution (where latency is $\max(T_1, T_2)$ rather than $T_1 + T_2$) is not currently captured.
-
-**Conclusion:** The Masked Subspace Architecture provides a theoretically sound, computationally efficient embedding for software capabilities. By mathematically decoupling functional transformations from operational costs, this design proves that complex application orchestration can be reduced to robust geometric vector algebra.
-
-## 11. How to Run the Engine
-
-The implementation is self-contained and requires Python 3.10+ with the `numpy` library. Follow these steps to execute the benchmark experiments:
-
-**1. Install Dependencies**
-Open your terminal and install the required matrix computation library:
 ```bash
+# 1. Install required dependencies
 pip install numpy
+
+# 2. Clone the repository and navigate to the root directory
+cd capability-embedding-engine
+
+# 3. Execute the benchmark suite
+python main.py
