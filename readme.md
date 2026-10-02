@@ -2,12 +2,12 @@
 **Name:** Devanandan J Y | **Institution:** Government Engineering College (GEC) Thrissur  
 **Course:** PCCST503 – Machine Learning | Assignment 2
 
-## 📖 Project Overview
+##  Project Overview
 This repository provides a mathematical vector embedding architecture designed for autonomous software capability composition. Unlike standard NLP embeddings (like Word2Vec) that map semantic similarities, this engine embeds deterministic functional operations into a continuous Cartesian space. 
 
 By separating variables into distinct functional, schema, and operational subspaces, the engine allows an automated planner to mathematically verify dependency chains, detect logical contradictions, and compute the exact algebraic cost of a composed software pipeline without relying on natural language inference.
 
-## 📐 The Masked Subspace Architecture
+## The Masked Subspace Architecture
 Standard flat vectors suffer from "null-value ambiguity"—they cannot easily distinguish between a state variable that must be `False` versus a state variable that is entirely irrelevant. 
 
 To solve this, this engine uses a **Masked Subspace Architecture**. A capability `C` is mapped to an array formatted as:
@@ -17,7 +17,7 @@ To solve this, this engine uses a **Masked Subspace Architecture**. A capability
 *   `p_mask` & `e_mask`: Binary masks (1.0 or 0.0) indicating whether a variable is actively required/mutated by the capability, or simply ignored.
 *   `q_ops`: A 3-dimensional operational cost vector containing Latency, Monetary Cost, and Log-Reliability.
 
-## 🧮 Mathematical Foundations
+##  Mathematical Foundations
 
 ### 1. Multiplicative Reliability via Log-Space Additivity
 Execution reliability probabilities multiply (e.g., `0.99 * 0.95 = 0.9405`). To keep the vector space strictly additive, we apply a negative log-likelihood transformation to the reliability coordinate:
@@ -37,7 +37,7 @@ When executing Capability A followed by Capability B (`B ◦ A`), the composite 
 *   **Overwritten Effects:** B's effects overwrite A's effects wherever they overlap.
 *   **Accumulated Operations:** Latency, cost, and log-reliability are summed perfectly.
 
-## 🧪 Benchmark Results: Web Deployment Pipeline
+##  Benchmark Results: Web Deployment Pipeline
 The engine was evaluated using a highly parameterized Cloud DevOps and Web Deployment benchmark (Next.js, Supabase, Vercel, Render) across 5 core experiments.
 
 *   **Experiment 1: Strict Compatibility:** The engine successfully validated the dependency chain `InitSupabase -> DeployNextjs` (Compatibility = 1.0) and accurately rejected contradictory sequences.
@@ -46,7 +46,7 @@ The engine was evaluated using a highly parameterized Cloud DevOps and Web Deplo
 *   **Experiment 4: Irrelevant Distractors:** Goal relevance was evaluated by comparing the goal vector (`AppLive=True`) against a distractor capability (`InstallSteamGame`). The dot product returned a 0.0 relevance score, instantly filtering the distractor.
 *   **Experiment 5: Operational Homomorphism:** Vector additivity on the log-reliability sector yielded an exact match to the scalar probability multiplication, validating the engine's mathematical integrity.
 
-## 🚀 Quick Start Guide
+##  Quick Start Guide
 
 ### Prerequisites
 *   Python 3.10+
