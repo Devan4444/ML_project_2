@@ -1,5 +1,5 @@
 # Autonomous Capability Embedding Engine
-**Author:** Devanandan J Y | **Institution:** Government Engineering College (GEC) Thrissur  
+**Name:** Devanandan J Y | **Institution:** Government Engineering College (GEC) Thrissur  
 **Course:** PCCST503 – Machine Learning | Assignment 2
 
 ## 📖 Project Overview
